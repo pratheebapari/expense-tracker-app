@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        h2 {
+            color: #34495e;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #27ae60;
+        }
+
+        .total-box {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 20px;
+            margin: 20px 0;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #2ecc71;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: auto;
+        }
+
+        .month-box {
+            background-color: #8e44ad;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .clear-btn {
+            background-color: #e74c3c;
+            margin-top: 10px;
+        }
+
+        .clear-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 My Expense Tracker</h1>
+
+        <div class="month-box">
+            📅 <span id="currentMonth"></span>
+        </div>
+
+        <h2>Add New Expense</h2>
+
+        <input type="text" id="expenseName" placeholder="Expense Name e.g. Lunch">
+        <input type="number" id="expenseAmount" placeholder="Amount e.g. 150">
+
+        <select id="expenseCategory">
+            <option>Food</option>
+            <option>Transport</option>
+            <option>Shopping</option>
+            <option>Entertainment</option>
+            <option>Other</option>
+        </select>
+
+        <button onclick="addExpense()">+ Add Expense</button>
+
+        <div class="total-box">
+            💸 Total Spent This Month: ₹<span id="totalAmount">0</span>
+        </div>
+
+        <h2>My Expenses</h2>
+        <ul id="expenseList"></ul>
+
+        <button class="clear-btn" onclick="clearAll()">🗑️ Clear All Expenses</button>
+    </div>
+
+    <script>
+        // Load expenses from localStorage when page opens
+        let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+
+        // Show current month
+        let monthNames = ["January","February","March","April","May","June",
+                          "July","August","September","October","November","December"];
+        let now = new Date();
+        document.getElementById("currentMonth").textContent = 
+            monthNames[now.getMonth()] + " " + now.getFullYear();
+
+        // Display saved expenses on load
+        displayExpenses();
+
+        function addExpense() {
+            let name = document.getElementById("expenseName").value;
+            let amount = document.getElementById("expenseAmount").value;
+            let category = document.getElementById("expenseCategory").value;
+
+            if (name === "" || amount === "") {
+                alert("Please fill in all fields!");
+                return;
+            }
+
+            // Add date to each expense
+            let today = now.getDate() + "/" + (now.getMonth()+1) + "/" + now.getFullYear();
+
+            expenses.push({
+                name: name,
+                amount: parseFloat(amount),
+                category: category,
+                date: today
+            });
+
+            // Save to localStorage
+            localStorage.setItem("expenses", JSON.stringify(expenses));
+
+            document.getElementById("expenseName").value = "";
+            document.getElementById("expenseAmount").value = "";
+
+            displayExpenses();
+        }
+
+        function deleteExpense(index) {
+            expenses.splice(index, 1);
+            localStorage.setItem("expenses", JSON.stringify(expenses));
+            displayExpenses();
+        }
+
+        function clearAll() {
+            if (confirm("Are you sure you want to clear all expenses?")) {
+                expenses = [];
+                localStorage.removeItem("expenses");
+                displayExpenses();
+            }
+        }
+
+        function displayExpenses() {
+            let list = document.getElementById("expenseList");
+            let total = 0;
+            list.innerHTML = "";
+
+            expenses.forEach(function(expense, index) {
+                let item = document.createElement("li");
+                item.innerHTML = `
+                    <span>📌 ${expense.name} - ₹${expense.amount} 
+                    <br><small>${expense.category} | ${expense.date}</small></span>
+                    <button class="delete-btn" onclick="deleteExpense(${index})">Delete</button>
+                `;
+                list.appendChild(item);
+                total += expense.amount;
+            });
+
+            document.getElementById("totalAmount").textContent = total;
+        }
+    </script>
+</body>
+</html>
